@@ -3,9 +3,10 @@
 import numpy as np
 # import pandas as pd
 from path import Path
-from scipy.misc import imread
+# from scipy.misc import imread
 from tqdm import tqdm
 
+from PIL import Image
 
 class test_framework_KITTI(object):
     def __init__(self, root, sequence_set, seq_length=3, step=1):
@@ -15,8 +16,8 @@ class test_framework_KITTI(object):
     def generator(self):
         for img_list, pose_list, sample_list in zip(self.img_files, self.poses, self.sample_indices):
             for snippet_indices in sample_list:
-                imgs = [imread(img_list[i]).astype(np.float32) for i in snippet_indices]
 
+                imgs = [Image.fromarray(Image.open(img_list[i])) for i in snippet_indices]
                 poses = np.stack(pose_list[i] for i in snippet_indices)
                 first_pose = poses[0]
                 poses[:,:,-1] -= first_pose[:,-1]
@@ -43,6 +44,7 @@ def read_scene_data(data_root, sequence_set, seq_length=3, step=1):
     shift_range = np.array([step*i for i in range(-demi_length, demi_length + 1)]).reshape(1, -1)
 
     sequences = set()
+    print(sequence_set)
     for seq in sequence_set:
         corresponding_dirs = set((data_root/'sequences').dirs(seq))
         sequences = sequences | corresponding_dirs
